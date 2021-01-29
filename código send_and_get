@@ -1,47 +1,48 @@
+ //bibliotecas
 #include <FirebaseESP8266.h>
+#include <ESP8266WiFi.h>
 #include <DHT.h>
 
-
-
-#include <ESP8266WiFi.h>
-
-
-// Set these to run example.
+//parametros das funções
 #define FIREBASE_HOST "pap2020-8183b.firebaseio.com"
 #define FIREBASE_AUTH "vb63xs9WJTOGoGfiSWrB9GYL0IS90VSP0TXKXOO9"
 #define WIFI_SSID "TP-Link_Extender"
 #define WIFI_PASSWORD ""
-#define DHTPIN D1    // Connect Data pin of DHT to D2
-#define FOG D2
-#define MOV D5
 
+//pinos
+#define FOG        D7
+#define MOV        D5
+#define RELE1      D0
+#define RELE2      D1
+#define RELE3      D2
+#define RELE4      D3
+#define DHTPIN     D6   
 #define DHTTYPE    DHT11
+
+
 DHT dht(DHTPIN, DHTTYPE);
 
-int manContData[9];
 
-FirebaseData l1;
-FirebaseData l2;
-FirebaseData l3;
-FirebaseData l5;
+//ojectos da firebase
 
 FirebaseData firebaseData;
+FirebaseData reles;
 
 
 FirebaseJson json;
 
-String r1;
-String r2;
-String r3;
-String r5;
 
+int manContData[9];
 
 void setup() {
 
+pinMode(RELE1,OUTPUT);
+pinMode(RELE2,OUTPUT);
+pinMode(RELE3,OUTPUT);
+pinMode(RELE4,OUTPUT);
+
    dht.begin();
-
-
-  Serial.begin(9600);
+  Serial.begin(115200);
  // Serial.setTimeout(20);
   // connect to wifi.
 
@@ -56,23 +57,92 @@ void setup() {
   Serial.println(WiFi.localIP());
   Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
   Firebase.reconnectWiFi(true);
+ 
 }
 
 
-void sensorUpdate(){
-  // Reading temperature or humidity takes about 250 milliseconds!
-  // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
+
+void loop() {
+  
+if (Firebase.getString(reles, "Luz1")) {
+
+    if (reles.dataType() == "string") {
+      Serial.println(reles.stringData());
+       if (reles.stringData() == "1") {
+         digitalWrite(RELE1, LOW);
+       }
+        else if (reles.stringData() == "0"){
+       digitalWrite(RELE1, HIGH);
+        }
+    }
+
+  } else {
+    Serial.println(reles.errorReason());
+  }     
+
+ 
+if (Firebase.getString(reles, "Luz2")) {
+
+    if (reles.dataType() == "string") {
+      Serial.println(reles.stringData());
+       if (reles.stringData() == "1") {
+         digitalWrite(RELE2, LOW);
+       }
+        else if (reles.stringData() == "0"){
+       digitalWrite(RELE2, HIGH);
+        }
+    }
+
+  } else {
+    Serial.println(reles.errorReason());
+  }     
+
+ 
+ if (Firebase.getString(reles, "Luz3")) {
+
+    if (reles.dataType() == "string") {
+      Serial.println(reles.stringData());
+       if (reles.stringData() == "1") {
+         digitalWrite(RELE3, LOW);
+       }
+        else if (reles.stringData() == "0"){
+       digitalWrite(RELE3, HIGH);
+        }
+    }
+
+  } else {
+    Serial.println(reles.errorReason());
+  }     
+
+
+
+  if (Firebase.getString(reles, "Luz4")) {
+
+    if (reles.dataType() == "string") {
+      Serial.println(reles.stringData());
+       if (reles.stringData() == "1") {
+         digitalWrite(RELE4, LOW);
+       }
+        else if (reles.stringData() == "0"){
+       digitalWrite(RELE4, HIGH);
+        }
+    }
+
+  } else {
+    Serial.println(reles.errorReason());
+  }     
+
   float h = dht.readHumidity();
-  // Read temperature as Celsius (the default)
+  
   float t = dht.readTemperature();
-  // Read temperature as Fahrenheit (isFahrenheit = true)
+ 
   float f = dht.readTemperature(true);
   
   int al  = digitalRead(FOG);
 
   int mo  = digitalRead(MOV);
   
-  // Check if any reads failed and exit early (to try again).
+  // verifica se alguma das leituras falhou.
   if (isnan(h) || isnan(t) || isnan(f)) {
     Serial.println(F("Failed to read from DHT sensor!"));
     return;
@@ -135,30 +205,6 @@ void sensorUpdate(){
     Serial.println("------------------------------------");
     Serial.println();
   }
-
-
-  
-}
-
-
-void loop() {
-  
-  sensorUpdate();
-  delay(100);
-
-
- Firebase.getString(l1, "Luz1");
- Firebase.getString(l2, "Luz2");
- Firebase.getString(l3, "Luz3");
- Firebase.getString(l5, "Luz4");
  
- r1 =l1.stringData();
- r2 =l2.stringData();
- r3 =l3.stringData();
- r5 =l5.stringData();
- 
-Serial.println(r1 + r2 + r3 + r5); 
-
-delay(100);
-
+   
 }
