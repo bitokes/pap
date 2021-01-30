@@ -10,13 +10,13 @@
 #define WIFI_PASSWORD ""
 
 //pinos
-#define FOG        D7
-#define MOV        D5
+#define FOG        D3
+#define MOV        D6
 #define RELE1      D0
 #define RELE2      D1
 #define RELE3      D2
-#define RELE4      D3
-#define DHTPIN     D6   
+#define RELE4      D5
+#define DHTPIN     D7   
 #define DHTTYPE    DHT11
 
 
@@ -42,7 +42,7 @@ pinMode(RELE3,OUTPUT);
 pinMode(RELE4,OUTPUT);
 
    dht.begin();
-  Serial.begin(115200);
+  Serial.begin(9600);
  // Serial.setTimeout(20);
   // connect to wifi.
 
@@ -60,78 +60,8 @@ pinMode(RELE4,OUTPUT);
  
 }
 
-
-
-void loop() {
+void leituras() {
   
-if (Firebase.getString(reles, "Luz1")) {
-
-    if (reles.dataType() == "string") {
-      Serial.println(reles.stringData());
-       if (reles.stringData() == "1") {
-         digitalWrite(RELE1, LOW);
-       }
-        else if (reles.stringData() == "0"){
-       digitalWrite(RELE1, HIGH);
-        }
-    }
-
-  } else {
-    Serial.println(reles.errorReason());
-  }     
-
- 
-if (Firebase.getString(reles, "Luz2")) {
-
-    if (reles.dataType() == "string") {
-      Serial.println(reles.stringData());
-       if (reles.stringData() == "1") {
-         digitalWrite(RELE2, LOW);
-       }
-        else if (reles.stringData() == "0"){
-       digitalWrite(RELE2, HIGH);
-        }
-    }
-
-  } else {
-    Serial.println(reles.errorReason());
-  }     
-
- 
- if (Firebase.getString(reles, "Luz3")) {
-
-    if (reles.dataType() == "string") {
-      Serial.println(reles.stringData());
-       if (reles.stringData() == "1") {
-         digitalWrite(RELE3, LOW);
-       }
-        else if (reles.stringData() == "0"){
-       digitalWrite(RELE3, HIGH);
-        }
-    }
-
-  } else {
-    Serial.println(reles.errorReason());
-  }     
-
-
-
-  if (Firebase.getString(reles, "Luz4")) {
-
-    if (reles.dataType() == "string") {
-      Serial.println(reles.stringData());
-       if (reles.stringData() == "1") {
-         digitalWrite(RELE4, LOW);
-       }
-        else if (reles.stringData() == "0"){
-       digitalWrite(RELE4, HIGH);
-        }
-    }
-
-  } else {
-    Serial.println(reles.errorReason());
-  }     
-
   float h = dht.readHumidity();
   
   float t = dht.readTemperature();
@@ -206,5 +136,80 @@ if (Firebase.getString(reles, "Luz2")) {
     Serial.println();
   }
  
+  }
+
+
+void loop() {
+
+leituras();
+ 
+if (Firebase.getString(reles, "Luz1")) {
+
+    if (reles.dataType() == "string") {
+      Serial.println(reles.stringData());
+       if (reles.stringData() == "1") {
+         digitalWrite(RELE1, LOW);
+       }
+        else if (reles.stringData() == "0"){
+       digitalWrite(RELE1, HIGH);
+        }
+    }
+
+  } else {
+    Serial.println(reles.errorReason());
+  }     
+
+ 
+if (Firebase.getString(reles, "Luz2")) {
+
+    if (reles.dataType() == "string") {
+      Serial.println(reles.stringData());
+       if (reles.stringData() == "1") {
+         digitalWrite(RELE2, LOW);
+       }
+        else if (reles.stringData() == "0"){
+       digitalWrite(RELE2, HIGH);
+        }
+    }
+
+  } else {
+    Serial.println(reles.errorReason());
+  }     
+
+ 
+ if (Firebase.getString(reles, "Luz3")) {
+
+    if (reles.dataType() == "string") {
+      Serial.println(reles.stringData());
+       if (reles.stringData() == "1") {
+         digitalWrite(RELE3, LOW);
+       }
+        else if (reles.stringData() == "0"){
+       digitalWrite(RELE3, HIGH);
+        }
+    }
+
+  } else {
+    Serial.println(reles.errorReason());
+  }     
+
+
+
+  if (Firebase.getString(reles, "Luz4")) {
+
+    if (reles.dataType() == "string") {
+      Serial.println(reles.stringData());
+       if (reles.stringData() == "1") {
+         digitalWrite(RELE4, LOW);
+       }
+        else if (reles.stringData() == "0"){
+       digitalWrite(RELE4, HIGH);
+        }
+    }
+
+  } else {
+    Serial.println(reles.errorReason());
+  }     
+
    
 }
