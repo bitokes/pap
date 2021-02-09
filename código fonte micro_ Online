@@ -1,4 +1,4 @@
- //bibliotecas
+//bibliotecas
 #include <FirebaseESP8266.h>
 #include <ESP8266WiFi.h>
 #include <DHT.h>
@@ -16,7 +16,8 @@
 #define RELE2      D1
 #define RELE3      D2
 #define RELE4      D5
-#define DHTPIN     D7   
+#define DHTPIN     D7 
+#define FUM        D4   
 #define DHTTYPE    DHT11
 
 
@@ -28,9 +29,7 @@ DHT dht(DHTPIN, DHTTYPE);
 FirebaseData firebaseData;
 FirebaseData reles;
 
-
 FirebaseJson json;
-
 
 int manContData[9];
 
@@ -40,6 +39,10 @@ pinMode(RELE1,OUTPUT);
 pinMode(RELE2,OUTPUT);
 pinMode(RELE3,OUTPUT);
 pinMode(RELE4,OUTPUT);
+pinMode(RELE4,OUTPUT);
+pinMode(MOV,INPUT);
+pinMode(FUM,INPUT);
+pinMode(FOG,INPUT);
 
    dht.begin();
   Serial.begin(9600);
@@ -48,7 +51,7 @@ pinMode(RELE4,OUTPUT);
 
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
    Serial.print("connecting");
-  while (WiFi.status() != WL_CONNECTED) {-
+  while (WiFi.status() != WL_CONNECTED) {
     Serial.print(".");
     delay(500);
   }
@@ -60,9 +63,11 @@ pinMode(RELE4,OUTPUT);
  
 }
 
-void leituras() {
-  
-  float h = dht.readHumidity();
+
+
+void loop() {
+
+float h = dht.readHumidity();
   
   float t = dht.readTemperature();
  
@@ -71,12 +76,10 @@ void leituras() {
   int al  = digitalRead(FOG);
 
   int mo  = digitalRead(MOV);
+
+  int fum = digitalRead(FUM);
+
   
-  // verifica se alguma das leituras falhou.
-  if (isnan(h) || isnan(t) || isnan(f)) {
-    Serial.println(F("Failed to read from DHT sensor!"));
-    return;
-  }
 
   Serial.print(F("Humidity: "));
   Serial.print(h);
@@ -88,62 +91,68 @@ void leituras() {
 
   if (Firebase.setFloat(firebaseData, "Temperatura", t))
   {
-    Serial.println("PASSED");
+    Serial.println("Temperatura enviada");
   }
   else
   {
-    Serial.println("FAILED");
-    Serial.println("REASON: " + firebaseData.errorReason());
+    Serial.println("Temperatura falhou");
+    Serial.println("razão: " + firebaseData.errorReason());
     Serial.println("------------------------------------");
     Serial.println();
   }
 
   if (Firebase.setFloat(firebaseData, "Humidade", h))
   {
-    Serial.println("PASSED");
+    Serial.println("humidade enviada");
    
   }
   else
   {
-    Serial.println("FAILED");
-    Serial.println("REASON: " + firebaseData.errorReason());
+    Serial.println("Humidade falhou");
+    Serial.println("razão: " + firebaseData.errorReason());
     Serial.println("------------------------------------");
     Serial.println();
   }
    if (Firebase.setFloat(firebaseData, "Alarme", al))
   {
-    Serial.println("PASSED");
+    Serial.println("fogo enviado");
    
   }
   else
   {
-    Serial.println("FAILED");
-    Serial.println("REASON: " + firebaseData.errorReason());
+    Serial.println("Alarme falhou");
+    Serial.println("razão: " + firebaseData.errorReason());
     Serial.println("------------------------------------");
     Serial.println();
   }
 
   if (Firebase.setFloat(firebaseData, "Movimento", mo))
   {
-    Serial.println("PASSED");
+    Serial.println("Movimento enviado");
    
   }
   else
   {
-    Serial.println("FAILED");
-    Serial.println("REASON: " + firebaseData.errorReason());
+    Serial.println("Movimento falhou");
+    Serial.println("razão: " + firebaseData.errorReason());
+    Serial.println("------------------------------------");
+    Serial.println();
+  }
+
+   if (Firebase.setFloat(firebaseData, "Fumo", fum))
+  {
+    Serial.println("Fumo enviado");
+   
+  }
+  else
+  {
+    Serial.println("Fumo falhou");
+    Serial.println("razão: " + firebaseData.errorReason());
     Serial.println("------------------------------------");
     Serial.println();
   }
  
-  }
-
-
-void loop() {
-
-leituras();
- 
-if (Firebase.getString(reles, "Luz1")) {
+  if (Firebase.getString(reles, "Luz1")) {
 
     if (reles.dataType() == "string") {
       Serial.println(reles.stringData());
@@ -210,6 +219,10 @@ if (Firebase.getString(reles, "Luz2")) {
   } else {
     Serial.println(reles.errorReason());
   }     
+  
 
-   
 }
+
+
+  
+  
