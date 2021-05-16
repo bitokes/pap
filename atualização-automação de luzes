@@ -1,0 +1,526 @@
+#include <NTPClient.h>
+#include <WiFiUdp.h>
+#include <FirebaseESP8266.h>
+#include <ESP8266WiFi.h>
+#include <DHT.h>
+
+
+//parametros das funções
+#define FIREBASE_HOST "pap2021-92c05-default-rtdb.firebaseio.com"
+#define FIREBASE_AUTH "s1m84sljeSoSZfXUUgFJZWOjgle4nmqUNBICu8ve"
+#define WIFI_SSID "TP-Link_Extender"
+#define WIFI_PASSWORD ""
+
+WiFiUDP ntp;
+
+ NTPClient timeClient(ntp, "europe.pool.ntp.org", 3600, 60000);
+
+String hora; 
+String minu;
+
+
+ int a = timeClient.getHours() ;
+ int b = timeClient.getMinutes() ;
+ 
+//pinos
+#define FOG        D3
+#define MOV        D6
+#define RELE1      D0
+#define RELE2      D1
+#define RELE3      D2
+#define RELE4      D5
+#define DHTPIN     D7 
+#define FUM        D4   
+#define DHTTYPE    DHT11
+
+
+DHT dht(DHTPIN, DHTTYPE);
+
+
+//ojectos da firebase
+
+FirebaseData firebaseData;
+FirebaseData reles;
+FirebaseData hi;
+FirebaseData mi;
+FirebaseData hf;
+FirebaseData mf;
+
+FirebaseJson json;
+
+
+
+void setup() {
+
+pinMode(RELE1,OUTPUT);
+pinMode(RELE2,OUTPUT);
+pinMode(RELE3,OUTPUT);
+pinMode(RELE4,OUTPUT);
+
+
+
+pinMode(MOV,INPUT);
+pinMode(FUM,INPUT);
+pinMode(FOG,INPUT);
+
+   dht.begin();
+  Serial.begin(9600);
+ // Serial.setTimeout(20);
+  // connect to wifi.
+
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+   Serial.print("connecting");
+  while (WiFi.status() != WL_CONNECTED) {
+    Serial.print(".");
+    delay(500);
+  }
+  Serial.println();
+  Serial.print("connected: ");
+  Serial.println(WiFi.localIP());
+  Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
+  Firebase.reconnectWiFi(true);
+  
+ 
+ 
+}
+
+
+
+void loop() {
+
+  float h = dht.readHumidity();
+  
+  float t = dht.readTemperature();
+ 
+  float f = dht.readTemperature(true);
+  
+  int al  = digitalRead(FOG);
+
+  int mo  = digitalRead(MOV);
+
+  int fum = digitalRead(FUM);
+
+  
+
+  Serial.print(F("Humidity: "));
+  Serial.print(h);
+  Serial.print(F("%  Temperature: "));
+  Serial.print(t);
+  Serial.print(F("C  ,"));
+  Serial.print(f);
+  Serial.println(F("F  "));
+
+  if (Firebase.setFloat(firebaseData, "Temperatura", t))
+  {
+    Serial.println("Temperatura enviada");
+  }
+  else
+  {
+    Serial.println("Temperatura falhou");
+    Serial.println("razão: " + firebaseData.errorReason());
+    Serial.println("------------------------------------");
+    Serial.println();
+  }
+
+  if (Firebase.setFloat(firebaseData, "Humidade", h))
+  {
+    Serial.println("humidade enviada");
+   
+  }
+  else
+  {
+    Serial.println("Humidade falhou");
+    Serial.println("razão: " + firebaseData.errorReason());
+    Serial.println("------------------------------------");
+    Serial.println();
+  }
+   if (Firebase.setFloat(firebaseData, "Alarme", al))
+  {
+    Serial.println("fogo enviado");
+   
+  }
+  else
+  {
+    Serial.println("Alarme falhou");
+    Serial.println("razão: " + firebaseData.errorReason());
+    Serial.println("------------------------------------");
+    Serial.println();
+  }
+
+  if (Firebase.setFloat(firebaseData, "Movimento", mo))
+  {
+    Serial.println("Movimento enviado");
+   
+  }
+  else
+  {
+    Serial.println("Movimento falhou");
+    Serial.println("razão: " + firebaseData.errorReason());
+    Serial.println("------------------------------------");
+    Serial.println();
+  }
+
+   if (Firebase.setFloat(firebaseData, "Fumo", fum))
+  {
+    Serial.println("Fumo enviado");
+   
+  }
+  else
+  {
+    Serial.println("Fumo falhou");
+    Serial.println("razão: " + firebaseData.errorReason());
+    Serial.println("------------------------------------");
+    Serial.println();
+  }
+ 
+  if (Firebase.getString(reles, "luz1")) {
+
+    if (reles.dataType() == "string") {
+      Serial.println(reles.stringData());
+       if (reles.stringData() == "1") {
+         digitalWrite(RELE1, LOW);
+       }
+        else if (reles.stringData() == "0"){
+       digitalWrite(RELE1, HIGH);
+        }
+    }
+
+  } else {
+    Serial.println(reles.errorReason());
+  }     
+
+ 
+if (Firebase.getString(reles, "luz2")) {
+
+    if (reles.dataType() == "string") {
+      Serial.println(reles.stringData());
+       if (reles.stringData() == "1") {
+         digitalWrite(RELE2, LOW);
+       }
+        else if (reles.stringData() == "0"){
+       digitalWrite(RELE2, HIGH);
+        }
+    } 
+
+  } else {
+    Serial.println(reles.errorReason());
+  }     
+
+ 
+ if (Firebase.getString(reles, "luz3")) {
+
+    if (reles.dataType() == "string") {
+      Serial.println(reles.stringData());
+       if (reles.stringData() == "1") {
+         digitalWrite(RELE3, LOW);
+       }
+        else if (reles.stringData() == "0"){
+       digitalWrite(RELE3, HIGH);
+        }
+    }
+
+  } else {
+    Serial.println(reles.errorReason());
+  }     
+
+
+
+  if (Firebase.getString(reles, "luz4")) {
+
+    if (reles.dataType() == "string") {
+      Serial.println(reles.stringData());
+       if (reles.stringData() == "1") {
+         digitalWrite(RELE4, LOW);
+       }
+        else if (reles.stringData() == "0"){
+       digitalWrite(RELE4, HIGH);
+        }
+    }
+
+  } else {
+    Serial.println(reles.errorReason());
+  }     
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  if (Firebase.getString(reles, "auto/confi")) {
+
+    if (reles.dataType() == "string") {
+   
+       if (reles.stringData() == "1") {
+         
+ timeClient.update();
+
+hora = timeClient.getHours() ;
+minu = timeClient.getMinutes() ;
+String c;
+String d;
+String c2;
+String d2; 
+
+
+
+
+
+
+
+
+
+  if (Firebase.getString(reles, "auto/hora ini") and Firebase.getString(mf, "auto/hora fin")) {
+
+    if (reles.dataType() == "string" and mf.dataType() == "string") {
+      c = reles.stringData();
+      c2 = mf.stringData();
+     
+     
+     if (Firebase.getString(reles, "auto/min ini") and Firebase.getString(mf, "auto/min fin")) {
+
+    if (reles.dataType() == "string" and mf.dataType() == "string") {
+      d = reles.stringData();
+      d2 = mf.stringData();
+      Serial.println(c);
+      Serial.println(d);
+      if (hora == c and minu == d){
+        Serial.println("deu");
+
+
+
+
+  if (Firebase.getString(reles, "auto/Luz1")) {
+
+    if (reles.dataType() == "string") {
+      
+       if (reles.stringData() == "0") {
+         digitalWrite(RELE1, LOW);
+       }
+        else if (reles.stringData() == "1"){
+       digitalWrite(RELE1, HIGH);
+        }
+    }
+
+  } else {
+    Serial.println(reles.errorReason());
+  }     
+
+
+
+
+  if (Firebase.getString(reles, "auto/Luz2")) {
+
+    if (reles.dataType() == "string") {
+    
+       if (reles.stringData() == "0") {
+         digitalWrite(RELE2, LOW);
+       }
+        else if (reles.stringData() == "1"){
+       digitalWrite(RELE2, HIGH);
+        }
+    }
+
+  } else {
+    Serial.println(reles.errorReason());
+  }     
+
+
+
+
+  if (Firebase.getString(reles, "auto/Luz3")) {
+
+    if (reles.dataType() == "string") {
+    
+       if (reles.stringData() == "0") {
+         digitalWrite(RELE3, LOW);
+       }
+        else if (reles.stringData() == "1"){
+       digitalWrite(RELE3, HIGH);
+        }
+    }
+
+  } else {
+    Serial.println(reles.errorReason());
+  }     
+
+
+
+  if (Firebase.getString(reles, "auto/Luz4")) {
+
+    if (reles.dataType() == "string") {
+    
+       if (reles.stringData() == "0") {
+         digitalWrite(RELE4, LOW);
+       }
+        else if (reles.stringData() == "1"){
+       digitalWrite(RELE4, HIGH);
+        }
+    }
+
+  } else {
+    Serial.println(reles.errorReason());
+  }     
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+
+
+
+        
+        }else if (hora == c2 and minu == d2){
+          Serial.println("num xei");
+
+
+  if (Firebase.getString(reles, "auto/Luz1")) {
+
+    if (reles.dataType() == "string") {
+      
+       if (reles.stringData() == "1") {
+         digitalWrite(RELE1, LOW);
+       }
+        else if (reles.stringData() == "0"){
+       digitalWrite(RELE1, HIGH);
+        }
+    }
+
+  } else {
+    Serial.println(reles.errorReason());
+  }     
+
+
+
+
+  if (Firebase.getString(reles, "auto/Luz2")) {
+
+    if (reles.dataType() == "string") {
+    
+       if (reles.stringData() == "1") {
+         digitalWrite(RELE2, LOW);
+       }
+        else if (reles.stringData() == "0"){
+       digitalWrite(RELE2, HIGH);
+        }
+    }
+
+  } else {
+    Serial.println(reles.errorReason());
+  }     
+
+
+
+
+  if (Firebase.getString(reles, "auto/Luz3")) {
+
+    if (reles.dataType() == "string") {
+    
+       if (reles.stringData() == "1") {
+         digitalWrite(RELE3, LOW);
+       }
+        else if (reles.stringData() == "0"){
+       digitalWrite(RELE3, HIGH);
+        }
+    }
+
+  } else {
+    Serial.println(reles.errorReason());
+  }     
+
+
+
+  if (Firebase.getString(reles, "auto/Luz4")) {
+
+    if (reles.dataType() == "string") {
+    
+       if (reles.stringData() == "1") {
+         digitalWrite(RELE4, LOW);
+       }
+        else if (reles.stringData() == "0"){
+       digitalWrite(RELE4, HIGH);
+        }
+    }
+
+  } else {
+    Serial.println(reles.errorReason());
+  }     
+
+
+          
+          }
+
+       
+    }
+
+
+    
+    
+
+  } else {
+    Serial.println(reles.errorReason());
+  }     
+    
+    }
+
+  } else {
+    Serial.println(reles.errorReason());
+  }     
+
+
+
+  
+
+
+
+
+
+
+
+
+         
+       }
+        else if (reles.stringData() == "0"){
+       digitalWrite(RELE4, HIGH);
+        }
+    }
+
+  } else {
+    Serial.println(reles.errorReason());
+  }     
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
